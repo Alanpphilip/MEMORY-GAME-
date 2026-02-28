@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Memory Game - 2 Players</title>
+
+<style>
+body{
+text-align:center;
+font-family:Arial;
+background:#1e293b;
+color:white;
+}
+
+h1{
+margin-top:20px;
+}
+
+#turn{
+font-size:22px;
+margin:10px;
+}
+
+#score{
+font-size:18px;
+margin:10px;
+}
+
+#winner{
+font-size:26px;
+margin:15px;
+color:#22c55e;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(4,120px);
+gap:10px;
+justify-content:center;
+margin-top:20px;
+}
+
+.card{
+width:120px;
+height:120px;
+background:#334155;
+border-radius:10px;
+cursor:pointer;
+}
+
+.card img{
+width:100%;
+height:100%;
+display:none;
+border-radius:10px;
+}
+
+.matched img{
+display:block;
+}
+
+button{
+margin-top:15px;
+padding:10px 20px;
+font-size:16px;
+border:none;
+border-radius:8px;
+background:#3b82f6;
+color:white;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Memory Game - 2 Players</h1>
+
+<div id="turn">Player 1 Turn</div>
+
+<div id="score">
+Player 1 Score: 0 | Player 2 Score: 0
+</div>
+
+<div id="winner"></div>
+
+<div class="grid" id="grid"></div>
+
+<button onclick="restartGame()">Restart Game</button>
+
+<script>
+
+// your images
+const images = [
+"images/IMAGE.jpg",
+"images/IMAGE1.jpg",
+"images/IMAGE2.jpg",
+"images/IMAGE3.jpg",
+"images/IMAGE4.jpg",
+"images/IMAGE5.jpg"
+];
+
+let cards = [];
+let firstCard = null;
+let secondCard = null;
+let lock = false;
+
+let player = 1;
+let score1 = 0;
+let score2 = 0;
+
+let matchesFound = 0;
+
+const grid = document.getElementById("grid");
+
+
+// start game
+function startGame(){
+
+grid.innerHTML="";
+
+cards = [...images, ...images];
+
+cards.sort(()=>Math.random()-0.5);
+
+cards.forEach(src=>{
+
+let div = document.createElement("div");
+div.className="card";
+
+let img = document.createElement("img");
+img.src = src;
+
+div.appendChild(img);
+
+div.onclick=()=>flip(div,img);
+
+grid.appendChild(div);
+
+});
+
+updateTurn();
+updateScore();
+
+}
+
+
+// flip card
+function flip(div,img){
+
+if(lock) return;
+
+if(div.classList.contains("matched")) return;
+
+img.style.display="block";
+
+if(!firstCard){
+
+firstCard={div,img};
+
+}else{
+
+secondCard={div,img};
+
+lock=true;
+
+if(firstCard.img.src===secondCard.img.src){
+
+// correct match
+firstCard.div.classList.add("matched");
+secondCard.div.classList.add("matched");
+
+matchesFound++;
+
+// score update
+if(player===1){
+score1++;
+}else{
+score2++;
+}
+
+updateScore();
+
+resetTurn();
+
+// check winner
+if(matchesFound===images.length){
+
+announceWinner();
+
+}
+
+}else{
+
+// wrong match
+setTimeout(()=>{
+
+firstCard.img.style.display="none";
+secondCard.img.style.display="none";
+
+player = player===1 ? 2 : 1;
+
+updateTurn();
+
+resetTurn();
+
+},1000);
+
+}
+
+}
+
+}
+
+
+// reset turn
+function resetTurn(){
+
+firstCard=null;
+secondCard=null;
+lock=false;
+
+}
+
+
+// update turn text
+function updateTurn(){
+
+document.getElementById("turn").innerText=
+"Player "+player+" Turn";
+
+}
+
+
+// update score
+function updateScore(){
+
+document.getElementById("score").innerText=
+"Player 1 Score: "+score1+" | Player 2 Score: "+score2;
+
+}
+
+
+// announce winner
+function announceWinner(){
+
+let text="";
+
+if(score1>score2){
+text="🏆 Player 1 Wins!";
+}
+else if(score2>score1){
+text="🏆 Player 2 Wins!";
+}
+else{
+text="🤝 It's a Draw!";
+}
+
+document.getElementById("winner").innerText=text;
+
+}
+
+
+// restart game
+function restartGame(){
+
+player=1;
+score1=0;
+score2=0;
+matchesFound=0;
+
+document.getElementById("winner").innerText="";
+
+startGame();
+
+}
+
+
+// start first time
+startGame();
+
+</script>
+
+</body>
+</html>
